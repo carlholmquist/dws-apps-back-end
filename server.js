@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import pool from './db.js';
 
 const app = express();
 
@@ -8,6 +9,43 @@ app.use(express.json());
 app.use(cors())
 
 let rundata = {}
+
+//Create a runform
+app.post('/run', async(req,res) => {
+    try {
+        const labeltype = 'Hazy Ipa'
+        // const {  operatorId, runTimeData, machineBPM, cansProduced, errormessage } = req.body;
+        // const {runTime, firstStart, end} = runTimeData;
+        const newRun = await pool.query(
+            "INSERT INTO orders (label_type) VALUES($1)", 
+            [labeltype]
+            )
+        
+        console.log(newRun)
+    } catch (error) {
+        console.log(error.message)
+    }
+})
+
+app.get('/run', async(req,res) => {
+    try {
+        const orders = await pool.query(
+            "SELECT * FROM orders"
+        )
+        const operators = await pool.query(
+            "SELECT * FROM operators"
+        )
+        console.log(orders.rows);
+        const result = {
+            operators: operators.rows,
+            orders: orders.rows
+        }
+        res.send(result);
+        
+    } catch (error) {
+        
+    }
+})
 
 app.get('/', (req,res) => {
     
@@ -19,10 +57,7 @@ app.get('/profile', (req,res) => {
 })
 
 app.post('/profile', (req,res) => {
-    console.log(req.body);
-    rundata = req.body;
     
-    res.send(req.body)
 })
 
 app.listen(3500);
